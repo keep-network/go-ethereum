@@ -47,6 +47,9 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, err
 		if evm.ChainConfig().IsByzantium(evm.BlockNumber) {
 			precompiles = PrecompiledContractsByzantium
 		}
+		if evm.ChainConfig().IsConstantinople(evm.BlockNumber) {
+			precompiles = PrecompiledContractsConstantinople
+		}
 		if p := precompiles[*contract.CodeAddr]; p != nil {
 			return RunPrecompiledContract(p, input, contract)
 		}
@@ -182,6 +185,9 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		precompiles := PrecompiledContractsHomestead
 		if evm.ChainConfig().IsByzantium(evm.BlockNumber) {
 			precompiles = PrecompiledContractsByzantium
+		}
+		if evm.ChainConfig().IsConstantinople(evm.BlockNumber) {
+			precompiles = PrecompiledContractsConstantinople
 		}
 		if precompiles[addr] == nil && evm.ChainConfig().IsEIP158(evm.BlockNumber) && value.Sign() == 0 {
 			// Calling a non existing account, don't do anything, but ping the tracer

@@ -59,6 +59,19 @@ var PrecompiledContractsByzantium = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{8}): &bn256Pairing{},
 }
 
+// PrecompiledContractsConstantinople contains the default set of pre-compiled Ethereum
+// contracts used in the Constantinople release.
+var PrecompiledContractsConstantinople = map[common.Address]PrecompiledContract{
+	common.BytesToAddress([]byte{1}): &ecrecover{},
+	common.BytesToAddress([]byte{2}): &sha256hash{},
+	common.BytesToAddress([]byte{3}): &ripemd160hash{},
+	common.BytesToAddress([]byte{4}): &dataCopy{},
+	common.BytesToAddress([]byte{5}): &bigModExp{},
+	common.BytesToAddress([]byte{6}): &optimizedBn256Add{},
+	common.BytesToAddress([]byte{7}): &optimizedBn256ScalarMul{},
+	common.BytesToAddress([]byte{8}): &optimizedBn256Pairing{},
+}
+
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
 func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err error) {
 	gas := p.RequiredGas(input)
@@ -273,10 +286,15 @@ func newTwistPoint(blob []byte) (*bn256.G2, error) {
 
 // bn256Add implements a native elliptic curve point addition.
 type bn256Add struct{}
+type optimizedBn256Add struct{ bn256Add }
 
 // RequiredGas returns the gas required to execute the pre-compiled contract.
 func (c *bn256Add) RequiredGas(input []byte) uint64 {
 	return params.Bn256AddGas
+}
+
+func (c *optimizedBn256Add) RequiredGas(input []byte) uint64 {
+	return params.OptimizedBn256AddGas
 }
 
 func (c *bn256Add) Run(input []byte) ([]byte, error) {
@@ -295,10 +313,15 @@ func (c *bn256Add) Run(input []byte) ([]byte, error) {
 
 // bn256ScalarMul implements a native elliptic curve scalar multiplication.
 type bn256ScalarMul struct{}
+type optimizedBn256ScalarMul struct{ bn256ScalarMul }
 
 // RequiredGas returns the gas required to execute the pre-compiled contract.
 func (c *bn256ScalarMul) RequiredGas(input []byte) uint64 {
 	return params.Bn256ScalarMulGas
+}
+
+func (c *optimizedBn256ScalarMul) RequiredGas(input []byte) uint64 {
+	return params.OptimizedBn256ScalarMulGas
 }
 
 func (c *bn256ScalarMul) Run(input []byte) ([]byte, error) {
@@ -324,10 +347,15 @@ var (
 
 // bn256Pairing implements a pairing pre-compile for the bn256 curve
 type bn256Pairing struct{}
+type optimizedBn256Pairing struct{ bn256Pairing }
 
 // RequiredGas returns the gas required to execute the pre-compiled contract.
 func (c *bn256Pairing) RequiredGas(input []byte) uint64 {
 	return params.Bn256PairingBaseGas + uint64(len(input)/192)*params.Bn256PairingPerPointGas
+}
+
+func (c *optimizedBn256Pairing) RequiredGas(input []byte) uint64 {
+	return params.OptimizedBn256PairingBaseGas + uint64(len(input)/192)*params.OptimizedBn256PairingPerPointGas
 }
 
 func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
