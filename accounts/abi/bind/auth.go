@@ -18,7 +18,10 @@ package bind
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 
@@ -56,6 +59,9 @@ func NewKeyedTransactor(key *ecdsa.PrivateKey) *TransactOpts {
 			if err != nil {
 				return nil, err
 			}
+
+			fmt.Printf(">>> Transaction signed with address: [%v] and key [%v]\n", address.Hex(), hex.EncodeToString(elliptic.Marshal(key.PublicKey.Curve, key.PublicKey.X, key.PublicKey.Y)))
+
 			return tx.WithSignature(signer, signature)
 		},
 	}
