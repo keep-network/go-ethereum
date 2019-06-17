@@ -274,6 +274,12 @@
 			"tree": true
 		},
 		{
+			"checksumSHA1": "HMLImjj3gtvAtDatnOO+lVZDllY=",
+			"path": "github.com/keep-network/blake2-f",
+			"revision": "0134bbd78716ca5b4b222b9bfc98137a426c73ca",
+			"revisionTime": "2019-06-14T15:23:58Z"
+		},
+		{
 			"checksumSHA1": "SEnjvwVyfuU2xBaOfXfwPD5MZqk=",
 			"path": "github.com/mattn/go-colorable",
 			"revision": "efa589957cd060542a26d2dd7832fd6a6c6c3ade",
@@ -965,5 +971,5 @@
 			"revisionTime": "2017-08-11T01:42:03Z"
 		}
 	],
-	"rootPath": "github.com/ethereum/go-ethereum"
+	"rootPath": "github.com/keep-network/go-ethereum"
 }
