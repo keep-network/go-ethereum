@@ -336,6 +336,16 @@ var bn256PairingTests = []precompiledTest{
 	},
 }
 
+// blake2sHashTests are the test and benchmark data for the blake2s hash
+// precompiled contract.
+var blake2sHashTests = []precompiledTest{
+	{
+		input:    "1234",
+		expected: "0000",
+		name:     "blake2s_test1",
+	},
+}
+
 func testPrecompiled(addr string, test precompiledTest, t *testing.T) {
 	p := PrecompiledContractsIstanbul[common.HexToAddress(addr)]
 	in := common.Hex2Bytes(test.input)
@@ -479,5 +489,17 @@ func TestPrecompiledBn256Pairing(t *testing.T) {
 func BenchmarkPrecompiledBn256Pairing(bench *testing.B) {
 	for _, test := range bn256PairingTests {
 		benchmarkPrecompiled("08", test, bench)
+	}
+}
+
+func TestPrecompiledBlake2sHash(t *testing.T) {
+	for _, test := range blake2sHashTests {
+		testPrecompiled("09", test, t)
+	}
+}
+
+func BenchmarkPrecompiledBlake2sHash(bench *testing.B) {
+	for _, test := range blake2sHashTests {
+		benchmarkPrecompiled("09", test, bench)
 	}
 }
