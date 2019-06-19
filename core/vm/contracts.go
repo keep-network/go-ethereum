@@ -18,8 +18,11 @@ package vm
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"math/big"
+
+	"github.com/keep-network/blake2"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
@@ -70,6 +73,7 @@ var PrecompiledContractsIstanbul = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{6}): &bn256Add{},
 	common.BytesToAddress([]byte{7}): &bn256ScalarMul{},
 	common.BytesToAddress([]byte{8}): &bn256Pairing{},
+	common.BytesToAddress([]byte{9}): &blake2F{},
 }
 
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
@@ -370,4 +374,50 @@ func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
 		return true32Byte, nil
 	}
 	return false32Byte, nil
+}
+
+type blake2F struct{}
+
+func (c *blake2F) RequiredGas(input []byte) uint64 {
+	return 1 //TODO: implement
+}
+
+func (c *blake2F) Run(input []byte) ([]byte, error) {
+	var h [8]uint64
+	h[0] = binary.BigEndian.Uint64(input[0:8])
+	h[1] = binary.BigEndian.Uint64(input[8:16])
+	h[2] = binary.BigEndian.Uint64(input[16:24])
+	h[3] = binary.BigEndian.Uint64(input[24:32])
+	h[4] = binary.BigEndian.Uint64(input[32:40])
+	h[5] = binary.BigEndian.Uint64(input[40:48])
+	h[6] = binary.BigEndian.Uint64(input[48:56])
+	h[7] = binary.BigEndian.Uint64(input[56:64])
+
+	var m [blake2.BlockSize]byte
+	copy(m[:], input[64:192])
+
+	var t [2]uint64
+	t[0] = binary.BigEndian.Uint64(input[216:224])
+	t[1] = binary.BigEndian.Uint64(input[248:256])
+
+	var f bool
+	if input[287] == 1 {
+		f = true
+	}
+
+	rounds := binary.BigEndian.Uint32(input[316:320])
+
+	blake2.F(&h, m, t, f, int(rounds))
+
+	var output [64]byte
+	binary.BigEndian.PutUint64(output[0:8], h[0])
+	binary.BigEndian.PutUint64(output[8:16], h[1])
+	binary.BigEndian.PutUint64(output[16:24], h[2])
+	binary.BigEndian.PutUint64(output[24:32], h[3])
+	binary.BigEndian.PutUint64(output[32:40], h[4])
+	binary.BigEndian.PutUint64(output[40:48], h[5])
+	binary.BigEndian.PutUint64(output[48:56], h[6])
+	binary.BigEndian.PutUint64(output[56:64], h[7])
+
+	return output[:], nil
 }
