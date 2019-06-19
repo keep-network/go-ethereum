@@ -8,7 +8,6 @@ package blake2
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math/bits"
 )
 
@@ -22,10 +21,10 @@ var iv = [8]uint64{
 	0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179,
 }
 
-// the precomputed values for the first 12 rounds of BLAKE2
-// there are 12 16-byte arrays - one for each round
+// the precomputed values for the first 10 rounds of BLAKE2
+// there are 10 16-byte arrays - one for each round
 // the entries are calculated from the sigma constants.
-var precomputed = [12][16]byte{
+var precomputed = [10][16]byte{
 	{0, 2, 4, 6, 1, 3, 5, 7, 8, 10, 12, 14, 9, 11, 13, 15},
 	{14, 4, 9, 13, 10, 8, 15, 6, 1, 0, 11, 5, 12, 2, 7, 3},
 	{11, 12, 5, 15, 8, 0, 2, 13, 10, 3, 7, 9, 14, 6, 1, 4},
@@ -36,27 +35,17 @@ var precomputed = [12][16]byte{
 	{13, 7, 12, 3, 11, 14, 1, 9, 5, 15, 8, 2, 0, 4, 6, 10},
 	{6, 14, 11, 0, 15, 9, 3, 8, 12, 13, 1, 10, 2, 7, 4, 5},
 	{10, 8, 7, 1, 2, 4, 6, 5, 15, 9, 3, 13, 11, 14, 12, 0},
-	{0, 2, 4, 6, 1, 3, 5, 7, 8, 10, 12, 14, 9, 11, 13, 15}, // equal to the first
-	{14, 4, 9, 13, 10, 8, 15, 6, 1, 0, 11, 5, 12, 2, 7, 3}, // equal to the second
 }
 
 // F is a compression function for Blake2. It takes as an argument the state
-// vector `h`, message block vector `blocks` 2-bit offset counter `t`, final
+// vector `h`, message block vector `mb`, offset counter `t`, final
 // block indicator flag `f`, and number of rounds `rounds`. The state vector
-// is modified by the function. Number of rounds can be anything between 0 and
-// 12 (inclusive).
-func F(h *[8]uint64, blocks []byte, t *[2]uint64, f uint64, rounds uint8) error {
-	if rounds > 12 {
-		return fmt.Errorf(
-			"number of rounds can not be greater than 12; is: [%v]",
-			rounds,
-		)
-	}
-
+// provided as the first parameter is modified by the function.
+func F(h *[8]uint64, mb [BlockSize]byte, t [2]uint64, f bool, rounds int) {
 	var m [16]uint64
 	t0, t1 := t[0], t[1]
 
-	for i := 0; i < len(blocks); {
+	for i := 0; i < len(mb); {
 		t0 += BlockSize
 		if t0 < BlockSize {
 			t1++
@@ -66,15 +55,18 @@ func F(h *[8]uint64, blocks []byte, t *[2]uint64, f uint64, rounds uint8) error 
 		v8, v9, v10, v11, v12, v13, v14, v15 := iv[0], iv[1], iv[2], iv[3], iv[4], iv[5], iv[6], iv[7]
 		v12 ^= t0
 		v13 ^= t1
-		v14 ^= f
+
+		if f {
+			v14 ^= 0xffffffffffffffff
+		}
 
 		for j := range m {
-			m[j] = binary.LittleEndian.Uint64(blocks[i:])
+			m[j] = binary.LittleEndian.Uint64(mb[i:])
 			i += 8
 		}
 
-		for j := 0; j < int(rounds); j++ {
-			s := &(precomputed[j])
+		for j := 0; j < rounds; j++ {
+			s := &(precomputed[j%10])
 
 			v0 += m[s[0]]
 			v0 += v4
@@ -204,5 +196,4 @@ func F(h *[8]uint64, blocks []byte, t *[2]uint64, f uint64, rounds uint8) error 
 		h[7] ^= v7 ^ v15
 	}
 	t[0], t[1] = t0, t1
-	return nil
 }

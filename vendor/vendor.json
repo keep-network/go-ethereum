@@ -274,10 +274,10 @@
 			"tree": true
 		},
 		{
-			"checksumSHA1": "HMLImjj3gtvAtDatnOO+lVZDllY=",
-			"path": "github.com/keep-network/blake2-f",
-			"revision": "0134bbd78716ca5b4b222b9bfc98137a426c73ca",
-			"revisionTime": "2019-06-14T15:23:58Z"
+			"checksumSHA1": "oikQZILdHdSmlX+FBteF3sG+lb8=",
+			"path": "github.com/keep-network/blake2",
+			"revision": "719792148bf3ef3364be38ac3925ecd917a3d260",
+			"revisionTime": "2019-06-19T22:37:44Z"
 		},
 		{
 			"checksumSHA1": "SEnjvwVyfuU2xBaOfXfwPD5MZqk=",
