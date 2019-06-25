@@ -382,7 +382,19 @@ func (c *blake2F) RequiredGas(input []byte) uint64 {
 	return 1 //TODO: implement
 }
 
+var (
+	blake2FInputLength = 213
+
+	errBlake2FIncorrectInputLength = errors.New(
+		"input length for Blake2 F precompile should be exactly 213 bytes",
+	)
+)
+
 func (c *blake2F) Run(input []byte) ([]byte, error) {
+	if len(input) != 213 {
+		return nil, errBlake2FIncorrectInputLength
+	}
+
 	var h [8]uint64
 	h[0] = binary.BigEndian.Uint64(input[0:8])
 	h[1] = binary.BigEndian.Uint64(input[8:16])

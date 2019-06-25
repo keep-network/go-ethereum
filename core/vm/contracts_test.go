@@ -17,8 +17,11 @@
 package vm
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"math/big"
+	"reflect"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -30,6 +33,14 @@ type precompiledTest struct {
 	gas             uint64
 	name            string
 	noBenchmark     bool // Benchmark primarily the worst-cases
+}
+
+// precompiledFailureTest defines the input/error pairs for precompiled
+// contract failure tests.
+type precompiledFailureTest struct {
+	input         string
+	expectedError error
+	name          string
 }
 
 // modexpTests are the test and benchmark data for the modexp precompiled contract.
@@ -403,6 +414,20 @@ func testPrecompiled(addr string, test precompiledTest, t *testing.T) {
 	})
 }
 
+func testPrecompiledFailure(addr string, test precompiledFailureTest, t *testing.T) {
+	p := PrecompiledContractsIstanbul[common.HexToAddress(addr)]
+	in := common.Hex2Bytes(test.input)
+	contract := NewContract(AccountRef(common.HexToAddress("31337")),
+		nil, new(big.Int), p.RequiredGas(in))
+
+	t.Run(fmt.Sprintf("%s", test.name), func(t *testing.T) {
+		_, err := RunPrecompiledContract(p, in, contract)
+		if !reflect.DeepEqual(err, test.expectedError) {
+			t.Errorf("Expected error [%v], got [%v]", test.expectedError, err)
+		}
+	})
+}
+
 func benchmarkPrecompiled(addr string, test precompiledTest, bench *testing.B) {
 	if test.noBenchmark {
 		return
@@ -534,7 +559,6 @@ func BenchmarkPrecompiledBn256Pairing(bench *testing.B) {
 		benchmarkPrecompiled("08", test, bench)
 	}
 }
-
 func TestPrecompiledBlake2F(t *testing.T) {
 	for _, test := range blake2FTests {
 		testPrecompiled("09", test, t)
@@ -544,5 +568,35 @@ func TestPrecompiledBlake2F(t *testing.T) {
 func BenchmarkPrecompiledBlake2F(bench *testing.B) {
 	for _, test := range blake2FTests {
 		benchmarkPrecompiled("09", test, bench)
+	}
+}
+
+func TestPrecompileBlake2FMalformedInput(t *testing.T) {
+	bytes212 := make([]byte, 212)
+	bytes214 := make([]byte, 214)
+
+	rand.Read(bytes212)
+	rand.Read(bytes214)
+
+	var tests = []precompiledFailureTest{
+		{
+			input:         "",
+			expectedError: errBlake2FIncorrectInputLength,
+			name:          "empty input",
+		},
+		{
+			input:         hex.EncodeToString(bytes212),
+			expectedError: errBlake2FIncorrectInputLength,
+			name:          "less than 213 bytes input",
+		},
+		{
+			input:         hex.EncodeToString(bytes214),
+			expectedError: errBlake2FIncorrectInputLength,
+			name:          "more than 213 bytes input",
+		},
+	}
+
+	for _, test := range tests {
+		testPrecompiledFailure("09", test, t)
 	}
 }
