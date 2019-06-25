@@ -378,7 +378,7 @@ func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
 type blake2F struct{}
 
 func (c *blake2F) RequiredGas(input []byte) uint64 {
-	if len(input) != 213 {
+	if len(input) != blake2FInputLength {
 		// Input is malformed, we can't read the number of rounds.
 		// Precompile can't be executed so we set its price to 0.
 		return 0
@@ -397,7 +397,7 @@ var (
 )
 
 func (c *blake2F) Run(input []byte) ([]byte, error) {
-	if len(input) != 213 {
+	if len(input) != blake2FInputLength {
 		return nil, errBlake2FIncorrectInputLength
 	}
 
