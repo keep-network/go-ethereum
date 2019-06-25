@@ -379,7 +379,14 @@ func (c *bn256Pairing) Run(input []byte) ([]byte, error) {
 type blake2F struct{}
 
 func (c *blake2F) RequiredGas(input []byte) uint64 {
-	return 1 //TODO: implement
+	if len(input) != 213 {
+		// Input is malformed, we can't read the number of rounds.
+		// Precompile can't be executed so we set its price to 0.
+		return 0
+	}
+
+	rounds := binary.BigEndian.Uint32(input[209:213])
+	return uint64(rounds)
 }
 
 var (
