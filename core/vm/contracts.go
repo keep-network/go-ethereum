@@ -397,15 +397,15 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	copy(m[:], input[64:192])
 
 	var t [2]uint64
-	t[0] = binary.BigEndian.Uint64(input[216:224])
-	t[1] = binary.BigEndian.Uint64(input[248:256])
+	t[0] = binary.BigEndian.Uint64(input[192:200])
+	t[1] = binary.BigEndian.Uint64(input[200:208])
 
 	var f bool
-	if input[287] == 1 {
+	if input[208] == 0x00000001 {
 		f = true
 	}
 
-	rounds := binary.BigEndian.Uint32(input[316:320])
+	rounds := binary.BigEndian.Uint32(input[209:213])
 
 	blake2.F(&h, m, t, f, int(rounds))
 
