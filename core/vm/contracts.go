@@ -417,10 +417,7 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	t[0] = binary.BigEndian.Uint64(input[196:204])
 	t[1] = binary.BigEndian.Uint64(input[204:212])
 
-	var f bool
-	if input[212] != 0 {
-		f = true
-	}
+	f := (input[212] != 0)
 
 	compression.F(&h, m, t, f, rounds)
 
