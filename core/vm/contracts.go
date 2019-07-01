@@ -388,12 +388,10 @@ func (c *blake2F) RequiredGas(input []byte) uint64 {
 	return uint64(rounds)
 }
 
-var (
-	blake2FInputLength = 213
+const blake2FInputLength = 213
 
-	errBlake2FIncorrectInputLength = errors.New(
-		"input length for Blake2 F precompile should be exactly 213 bytes",
-	)
+var errBlake2FIncorrectInputLength = errors.New(
+	"input length for Blake2 F precompile should be exactly 213 bytes",
 )
 
 func (c *blake2F) Run(input []byte) ([]byte, error) {
