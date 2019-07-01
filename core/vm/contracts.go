@@ -27,7 +27,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/keep-network/blake2"
+	"github.com/keep-network/blake2b/compression"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -400,17 +400,16 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	}
 
 	var h [8]uint64
-	h[0] = binary.BigEndian.Uint64(input[0:8])
-	h[1] = binary.BigEndian.Uint64(input[8:16])
-	h[2] = binary.BigEndian.Uint64(input[16:24])
-	h[3] = binary.BigEndian.Uint64(input[24:32])
-	h[4] = binary.BigEndian.Uint64(input[32:40])
-	h[5] = binary.BigEndian.Uint64(input[40:48])
-	h[6] = binary.BigEndian.Uint64(input[48:56])
-	h[7] = binary.BigEndian.Uint64(input[56:64])
+	for i := 0; i < 8; i++ {
+		offset := i * 8
+		h[i] = binary.BigEndian.Uint64(input[offset : offset+8])
+	}
 
-	var m [blake2.BlockSize]byte
-	copy(m[:], input[64:192])
+	var m [16]uint64
+	for i := 0; i < 16; i++ {
+		offset := 64 + i*8
+		m[i] = binary.BigEndian.Uint64(input[offset : offset+8])
+	}
 
 	var t [2]uint64
 	t[0] = binary.BigEndian.Uint64(input[192:200])
@@ -423,17 +422,13 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 
 	rounds := binary.BigEndian.Uint32(input[209:213])
 
-	blake2.F(&h, m, t, f, int(rounds))
+	compression.F(&h, m, t, f, rounds)
 
 	var output [64]byte
-	binary.BigEndian.PutUint64(output[0:8], h[0])
-	binary.BigEndian.PutUint64(output[8:16], h[1])
-	binary.BigEndian.PutUint64(output[16:24], h[2])
-	binary.BigEndian.PutUint64(output[24:32], h[3])
-	binary.BigEndian.PutUint64(output[32:40], h[4])
-	binary.BigEndian.PutUint64(output[40:48], h[5])
-	binary.BigEndian.PutUint64(output[48:56], h[6])
-	binary.BigEndian.PutUint64(output[56:64], h[7])
+	for i := 0; i < 8; i++ {
+		offset := i * 8
+		binary.BigEndian.PutUint64(output[offset:offset+8], h[i])
+	}
 
 	return output[:], nil
 }
