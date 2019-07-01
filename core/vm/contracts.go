@@ -418,7 +418,7 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	t[1] = binary.BigEndian.Uint64(input[204:212])
 
 	var f bool
-	if input[212] == 0x00000001 {
+	if input[212] != 0 {
 		f = true
 	}
 
