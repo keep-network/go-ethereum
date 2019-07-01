@@ -384,7 +384,7 @@ func (c *blake2F) RequiredGas(input []byte) uint64 {
 		return 0
 	}
 
-	rounds := binary.BigEndian.Uint32(input[209:213])
+	rounds := binary.BigEndian.Uint32(input[0:4])
 	return uint64(rounds)
 }
 
