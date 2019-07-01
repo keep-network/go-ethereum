@@ -399,28 +399,28 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 		return nil, errBlake2FIncorrectInputLength
 	}
 
+	rounds := binary.BigEndian.Uint32(input[0:4])
+
 	var h [8]uint64
 	for i := 0; i < 8; i++ {
-		offset := i * 8
+		offset := 4 + i*8
 		h[i] = binary.BigEndian.Uint64(input[offset : offset+8])
 	}
 
 	var m [16]uint64
 	for i := 0; i < 16; i++ {
-		offset := 64 + i*8
+		offset := 68 + i*8
 		m[i] = binary.BigEndian.Uint64(input[offset : offset+8])
 	}
 
 	var t [2]uint64
-	t[0] = binary.BigEndian.Uint64(input[192:200])
-	t[1] = binary.BigEndian.Uint64(input[200:208])
+	t[0] = binary.BigEndian.Uint64(input[196:204])
+	t[1] = binary.BigEndian.Uint64(input[204:212])
 
 	var f bool
-	if input[208] == 0x00000001 {
+	if input[212] == 0x00000001 {
 		f = true
 	}
-
-	rounds := binary.BigEndian.Uint32(input[209:213])
 
 	compression.F(&h, m, t, f, rounds)
 
