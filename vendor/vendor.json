@@ -276,8 +276,10 @@
 		{
 			"checksumSHA1": "Wu1rZtI1n4bDQPyLuK60cDFmvFI=",
 			"path": "github.com/keep-network/blake2b/compression",
-			"revision": "8a47bb55a83644316ec2b1458502fb8cf2303705",
-			"revisionTime": "2019-07-01T13:22:28Z"
+			"revision": "02884c605a94951d05165fd56c69d6239f63b3d1",
+			"revisionTime": "2019-07-02T09:51:07Z",
+			"version": "v1.0",
+			"versionExact": "v1.0"
 		},
 		{
 			"checksumSHA1": "SEnjvwVyfuU2xBaOfXfwPD5MZqk=",
