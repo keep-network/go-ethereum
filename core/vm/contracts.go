@@ -404,18 +404,18 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	var h [8]uint64
 	for i := 0; i < 8; i++ {
 		offset := 4 + i*8
-		h[i] = binary.BigEndian.Uint64(input[offset : offset+8])
+		h[i] = binary.LittleEndian.Uint64(input[offset : offset+8])
 	}
 
 	var m [16]uint64
 	for i := 0; i < 16; i++ {
 		offset := 68 + i*8
-		m[i] = binary.BigEndian.Uint64(input[offset : offset+8])
+		m[i] = binary.LittleEndian.Uint64(input[offset : offset+8])
 	}
 
 	var t [2]uint64
-	t[0] = binary.BigEndian.Uint64(input[196:204])
-	t[1] = binary.BigEndian.Uint64(input[204:212])
+	t[0] = binary.LittleEndian.Uint64(input[196:204])
+	t[1] = binary.LittleEndian.Uint64(input[204:212])
 
 	f := (input[212] != 0)
 
@@ -424,7 +424,7 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	var output [64]byte
 	for i := 0; i < 8; i++ {
 		offset := i * 8
-		binary.BigEndian.PutUint64(output[offset:offset+8], h[i])
+		binary.LittleEndian.PutUint64(output[offset:offset+8], h[i])
 	}
 
 	return output[:], nil
