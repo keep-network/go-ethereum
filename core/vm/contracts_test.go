@@ -535,7 +535,7 @@ func TestPrecompileBlake2FMalformedInput(t *testing.T) {
 	rand.Read(bytes214)
 
 	malformedFinalBlockIndicator := make([]byte, 213)
-	copy(malformedFinalBlockIndicator, blake2FTests[0].input)
+	copy(malformedFinalBlockIndicator, common.Hex2Bytes(blake2FTests[0].input))
 	malformedFinalBlockIndicator[212] = 2
 
 	var tests = []precompiledFailureTest{
