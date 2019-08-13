@@ -529,10 +529,14 @@ func BenchmarkPrecompiledBlake2F(bench *testing.B) {
 
 func TestPrecompileBlake2FMalformedInput(t *testing.T) {
 	bytes212 := make([]byte, 212)
-	bytes214 := make([]byte, 214)
-
 	rand.Read(bytes212)
+
+	bytes214 := make([]byte, 214)
 	rand.Read(bytes214)
+
+	malformedFinalBlockIndicator := make([]byte, 213)
+	copy(malformedFinalBlockIndicator, blake2FTests[0].input)
+	malformedFinalBlockIndicator[212] = 2
 
 	var tests = []precompiledFailureTest{
 		{
@@ -549,6 +553,11 @@ func TestPrecompileBlake2FMalformedInput(t *testing.T) {
 			input:         hex.EncodeToString(bytes214),
 			expectedError: errBlake2FIncorrectInputLength,
 			name:          "more than 213 bytes input",
+		},
+		{
+			input:         hex.EncodeToString(malformedFinalBlockIndicator),
+			expectedError: errBlake2FIncorrectFinalBlockIndicator,
+			name:          "malformed final block indicator flag",
 		},
 	}
 

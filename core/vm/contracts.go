@@ -389,14 +389,23 @@ func (c *blake2F) RequiredGas(input []byte) uint64 {
 }
 
 const blake2FInputLength = 213
+const blake2FFinalBlockBytes = byte(1)
+const blake2FNonFinalBlockBytes = byte(0)
 
 var errBlake2FIncorrectInputLength = errors.New(
 	"input length for Blake2 F precompile should be exactly 213 bytes",
 )
 
+var errBlake2FIncorrectFinalBlockIndicator = errors.New(
+	"incorrect final block indicator flag",
+)
+
 func (c *blake2F) Run(input []byte) ([]byte, error) {
 	if len(input) != blake2FInputLength {
 		return nil, errBlake2FIncorrectInputLength
+	}
+	if input[212] != blake2FNonFinalBlockBytes && input[212] != blake2FFinalBlockBytes {
+		return nil, errBlake2FIncorrectFinalBlockIndicator
 	}
 
 	rounds := binary.BigEndian.Uint32(input[0:4])
@@ -417,7 +426,7 @@ func (c *blake2F) Run(input []byte) ([]byte, error) {
 	t[0] = binary.LittleEndian.Uint64(input[196:204])
 	t[1] = binary.LittleEndian.Uint64(input[204:212])
 
-	f := (input[212] != 0)
+	f := (input[212] == blake2FFinalBlockBytes)
 
 	compression.F(&h, m, t, f, rounds)
 
